@@ -111,10 +111,13 @@ const pageSlider = new Swiper('.page', {
         init: function () {
             scrollDown();
             setScrollType();
-            wrapper.classList.add('_loaded')
+            delFreemodeOnPhones();
+            wrapper.classList.add('_loaded');
         },
+        // Событие изменение слайдера
         resize: function () {
             setScrollType();
+            delFreemodeOnPhones();
         }
     },
 });
@@ -148,6 +151,12 @@ function setScrollType() {
                 break;
             }
         }
+    }
+}
+function delFreemodeOnPhones() {
+    if (window.innerWidth < 767.98) {
+        wrapper.classList.add('_free')
+        pageSlider.params.freeMode = true;
     }
 }
 // Init swiper
