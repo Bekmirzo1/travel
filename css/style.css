@@ -347,6 +347,10 @@ body._lock {
   line-height: 177.7777777778%;
 }
 
+._lazy {
+  background: url(../img/loading.gif) center/50px no-repeat;
+}
+
 ._ibg {
   position: relative;
 }

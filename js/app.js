@@ -41,6 +41,19 @@ const pageSlider = new Swiper('.page', {
     parallax: {
         enabled: true,
     },
+    // Отключить предзагрузку всех картинок
+    preloadImages: false,
+    // Lazy Loading
+    lazy: {
+        // Подключать на старте переключения слайда
+        loadOnTransitionStart: true,
+        // Подключить предыдущую и следующие картинки
+        loadPrevNext: false,
+    },
+    // Слежка за видимыми слайдами
+    watchSlidesProgress: true,
+    // Добавление класса видимым слайдам
+    watchSlidesVisibility: true,
     // Управление клавиатурой
     keyboard: {
         // Включить\выключить
@@ -62,6 +75,7 @@ const pageSlider = new Swiper('.page', {
         // будет срабатывать прокрутка мышью.
         //eventsTarget: ".image-slider"
     },
+
     // Отключение функцияонала если слайдеров меньше чем нужно
     watchOverflow: true,
     // Скорость
@@ -118,6 +132,9 @@ const pageSlider = new Swiper('.page', {
         resize: function () {
             setScrollType();
             delFreemodeOnPhones();
+        },
+        slideNextTransitionStart: function () {
+            webpAdd();
         }
     },
 });
@@ -143,7 +160,7 @@ function setScrollType() {
     for (let index = 0; index < pageSlider.slides.length; index++) {
         const pageSlide = pageSlider.slides[index];
         const pageSlideContent = pageSlide.querySelector('.page__content');
-        if (pageSlideContent) {
+        if (pageSlideContent && window.innerWidth > 767.98) {
             const pageSlideContentHeight = pageSlideContent.offsetHeight;
             if (pageSlideContentHeight > window.innerHeight) {
                 wrapper.classList.add('_free');
@@ -157,6 +174,25 @@ function delFreemodeOnPhones() {
     if (window.innerWidth < 767.98) {
         wrapper.classList.add('_free')
         pageSlider.params.freeMode = true;
+    }
+}
+
+function webpAdd() {
+    const loadedImages = document.querySelectorAll('.swiper-lazy-loaded');
+    if (loadedImages.length > 0) {
+        for (let index = 0; index < loadedImages.length; index++) {
+            const loadedImage = loadedImages[index];
+            const webp = loadedImage.previousElementSibling;
+            if (webp && webp.tagName == 'SOURCE') {
+                const dataImgSrc = loadedImage.getAttribute('src').split('.');
+                if (dataImgSrc[1] !== 'svg') {
+                    dataImgSrc[1] = 'webp'
+                }
+                const dataImgSrcWebp = dataImgSrc.join('.');
+                webp.setAttribute('srcset', dataImgSrcWebp);
+            }
+        }
+
     }
 }
 // Init swiper
