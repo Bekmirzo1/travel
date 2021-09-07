@@ -132,9 +132,6 @@ const pageSlider = new Swiper('.page', {
         resize: function () {
             setScrollType();
             delFreemodeOnPhones();
-        },
-        slideNextTransitionStart: function () {
-            webpAdd();
         }
     },
 });
@@ -177,24 +174,6 @@ function delFreemodeOnPhones() {
     }
 }
 
-function webpAdd() {
-    const loadedImages = document.querySelectorAll('.swiper-lazy-loaded');
-    if (loadedImages.length > 0) {
-        for (let index = 0; index < loadedImages.length; index++) {
-            const loadedImage = loadedImages[index];
-            const webp = loadedImage.previousElementSibling;
-            if (webp && webp.tagName == 'SOURCE') {
-                const dataImgSrc = loadedImage.getAttribute('src').split('.');
-                if (dataImgSrc[1] !== 'svg') {
-                    dataImgSrc[1] = 'webp'
-                }
-                const dataImgSrcWebp = dataImgSrc.join('.');
-                webp.setAttribute('srcset', dataImgSrcWebp);
-            }
-        }
-
-    }
-}
 // Init swiper
 pageSlider.init();
 
@@ -214,7 +193,56 @@ testWebP(function (support) {
 		document.querySelector('html').classList.add('_no-webp');
 	}
 });
-
+// * LazyLoading
+// window.onload необходим чтобы не было определённых багов с появлением картины 
+window.onload = function () {
+    const lazyImages = document.querySelectorAll('img[data-src]');
+    if (lazyImages.length > 0) {
+        const options = {
+            rootMargin: "0px 0px 50px 0px",
+            threshold: 0
+        };
+        const imageObserver = new IntersectionObserver(lazyImages => {
+            for (let index = 0; index < lazyImages.length; index++) {
+                const lazyImage = lazyImages[index];
+                if (lazyImage.isIntersecting) {
+                    loadImage(lazyImage.target)
+                    imageObserver.unobserve(lazyImage.target);
+                } else {
+                    return;
+                }
+            }
+        }, options);
+        function loadImage(image) {
+            if (image.dataset.src) {
+                image.src = image.dataset.src;
+                image.removeAttribute('data-src');
+                if (image.previousElementSibling) {
+                    webpDelete(image)
+                }
+            }
+        }
+        function webpDelete(img) {
+            const webp = img.previousElementSibling;
+            if (webp.tagName == 'SOURCE') {
+                const dataImgSrc = img.getAttribute('src').split('.');
+                if (dataImgSrc[1] !== 'svg') {
+                    dataImgSrc[1] = 'webp'
+                }
+                const dataImgSrcWebp = dataImgSrc.join('.');
+                webp.setAttribute('srcset', dataImgSrcWebp);
+                webp.removeAttribute('data-srcset');
+            }
+        }
+        lazyImages.forEach(image => {
+            if (image.getBoundingClientRect().top + pageYOffset > pageYOffset) {
+                imageObserver.observe(image);
+            } else {
+                loadImage(image);
+            }
+        });
+    }
+}
 // * Минни версия Динамического адаптива
 const parent_original = document.querySelector('.main-footer__content');
 const parent = document.querySelector('.footer__body');
